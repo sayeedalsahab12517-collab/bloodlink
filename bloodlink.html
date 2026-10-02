@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BloodLink Pro - রক্তদান ও এআই স্বাস্থ্য সেবা</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Leaflet Map CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <style>
+    #map { height: 400px; border-radius: 0.75rem; z-index: 10; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen font-sans">
+
+  <!-- Navbar -->
+  <header class="bg-red-600 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-2 cursor-pointer" onclick="showPage('home')">
+        <i class="fa-solid fa-droplet text-2xl text-white"></i>
+        <div class="flex items-center gap-1.5">
+          <span class="text-xl font-bold tracking-tight">BloodLink</span>
+          <span class="text-[10px] bg-red-800 text-red-100 px-1.5 py-0.5 rounded font-bold">PRO</span>
+        </div>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav class="hidden lg:flex space-x-1 text-xs font-semibold">
+        <button onclick="showPage('home')" id="nav-home" class="nav-btn px-3 py-2 rounded-lg bg-red-700">হোম</button>
+        <button onclick="showPage('find-donor')" id="nav-find-donor" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700">রক্তদাতা খুঁজুন</button>
+        <button onclick="showPage('ai-assistant')" id="nav-ai-assistant" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700 flex items-center gap-1.5 text-amber-200">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> এআই হেলথ অ্যাসিস্ট্যান্ট
+        </button>
+        <button onclick="showPage('map-view')" id="nav-map-view" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700">ম্যাপে ডোনার</button>
+        <button onclick="showPage('sos-feed')" id="nav-sos-feed" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700">জরুরি SOS</button>
+        <button onclick="showPage('compatibility')" id="nav-compatibility" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700">ম্যাচিং গাইড</button>
+        <button onclick="showPage('leaderboard')" id="nav-leaderboard" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700">হিরো ডোনার্স</button>
+        <button onclick="showPage('register-donor')" id="nav-register-donor" class="nav-btn px-3 py-2 rounded-lg hover:bg-red-700">নিবন্ধন</button>
+      </nav>
+
+      <button onclick="openSosModal()" class="bg-white text-red-600 px-3.5 py-2 rounded-lg text-xs font-bold hover:bg-red-50 shadow-md flex items-center gap-1.5 animate-pulse">
+        <i class="fa-solid fa-bell"></i> জরুরি রক্তের আবেদন
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
+
+    <!-- 1. HOME PAGE -->
+    <section id="page-home" class="page-section space-y-6">
+      <div class="bg-gradient-to-r from-red-600 via-red-500 to-rose-600 rounded-2xl text-white p-8 md:p-10 shadow-lg flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-4 max-w-xl">
+          <div class="inline-flex items-center gap-2 bg-red-700/60 px-3 py-1 rounded-full text-xs font-medium">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> রিয়েল-টাইম রক্তদান ও এআই সহায়তা
+          </div>
+          <h2 class="text-3xl md:text-4xl font-extrabold leading-tight">প্রতিটি ফোঁটা রক্তে ফিরে আসুক একটি মূল্যবান জীবন</h2>
+          <p class="text-red-100 text-sm leading-relaxed">জরুরি মুহূর্তে রক্তের সন্ধানে নির্ভুল ম্যাচিং, লাইভ এসওএস এলার্ট এবং রক্তদানের উপযুক্ততা যাচাইয়ে এআই-চালিত স্বয়ংক্রিয় স্বাস্থ্য পরামর্শক।</p>
+          <div class="flex flex-wrap gap-3 pt-2">
+            <button onclick="showPage('find-donor')" class="bg-white text-red-600 font-bold px-5 py-2.5 rounded-xl text-xs shadow hover:bg-red-50 transition">
+              <i class="fa-solid fa-magnifying-glass mr-1"></i> ডোনার খুঁজুন
+            </button>
+            <button onclick="showPage('ai-assistant')" class="bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold px-5 py-2.5 rounded-xl text-xs shadow transition">
+              <i class="fa-solid fa-robot mr-1"></i> এআই ডাক্তার অ্যাসিস্ট্যান্ট
+            </button>
+            <button onclick="showPage('register-donor')" class="bg-red-800 hover:bg-red-900 border border-red-400 font-semibold px-5 py-2.5 rounded-xl text-xs shadow transition">
+              <i class="fa-solid fa-hand-holding-heart mr-1"></i> রক্তদাতা হন
+            </button>
+          </div>
+        </div>
+        <div class="hidden md:flex flex-col items-center justify-center p-6 bg-white/10 rounded-2xl border border-white/20 text-center">
+          <i class="fa-solid fa-heart-pulse text-6xl text-white mb-2"></i>
+          <span class="font-bold text-sm">সরাসরি যুক্ত থাকুন</span>
+          <span class="text-xs text-red-100">গাজীপুর ও ঢাকাসহ সমগ্র দেশজুড়ে</span>
+        </div>
+      </div>
+
+      <!-- Quick Metrics -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-red-100 text-red-600 flex items-center justify-center text-lg"><i class="fa-solid fa-users"></i></div>
+          <div>
+            <div class="text-xl font-bold text-slate-800" id="stat-donors">১২৫+</div>
+            <div class="text-[11px] text-slate-500">নিবন্ধিত রক্তদাতা</div>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center text-lg"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div>
+            <div class="text-xl font-bold text-slate-800">২৪/৭</div>
+            <div class="text-[11px] text-slate-500">এআই হেলথ সাপোর্ট</div>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center text-lg"><i class="fa-solid fa-truck-medical"></i></div>
+          <div>
+            <div class="text-xl font-bold text-slate-800" id="stat-sos">২</div>
+            <div class="text-[11px] text-slate-500">চলমান জরুরি আবেদন</div>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-lg"><i class="fa-solid fa-award"></i></div>
+          <div>
+            <div class="text-xl font-bold text-slate-800">৫০+</div>
+            <div class="text-[11px] text-slate-500">স্বীকৃত বীর রক্তদাতা</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Recent SOS Preview -->
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-600 animate-ping"></span> অতি জরুরি রক্তের প্রয়োজনীয়তা (Live Feed)
+          </h3>
+          <button onclick="showPage('sos-feed')" class="text-xs text-red-600 font-semibold hover:underline">সবগুলো দেখুন &rarr;</button>
+        </div>
+        <div id="homeSosPreview" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- 2. AI HEALTH ASSISTANT PAGE (DEDICATED FULL AI HUB) -->
+    <section id="page-ai-assistant" class="page-section hidden space-y-6">
+      <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 text-white p-6 md:p-8 rounded-2xl shadow-lg flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <div class="inline-flex items-center gap-2 bg-red-600/30 text-red-300 border border-red-500/30 px-3 py-1 rounded-full text-xs font-semibold mb-2">
+            <i class="fa-solid fa-microchip"></i> ইন্টেলিজেন্ট হেলথ কোর v2.5
+          </div>
+          <h2 class="text-2xl font-bold">BloodLink এআই হেলথ অ্যাসিস্ট্যান্ট</h2>
+          <p class="text-xs text-slate-300 max-w-xl mt-1">রক্তদান সংক্রান্ত যে কোনো জটিল প্রশ্ন, মেডিকেল উপযুক্ততা স্ক্রিনিং এবং জরুরি রক্তের গ্রুপ মেলানোর তাৎক্ষণিক নির্ভরযোগ্য এআই সহায়তা।</p>
+        </div>
+        <div class="text-5xl text-amber-400">
+          <i class="fa-solid fa-brain"></i>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Interactive AI Chat Engine Window -->
+        <div class="lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[520px]">
+          <div class="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50 rounded-t-2xl">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-red-600 text-white flex items-center justify-center text-sm shadow">
+                <i class="fa-solid fa-robot"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-xs text-slate-800">BloodLink এআই বিশেষজ্ঞ</h4>
+                <p class="text-[10px] text-emerald-600 font-medium flex items-center gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> সক্রিয় ও প্রস্তুত
+                </p>
+              </div>
+            </div>
+            <button onclick="clearFullAiChat()" class="text-slate-400 hover:text-slate-600 text-xs" title="চ্যাট পরিষ্কার করুন">
+              <i class="fa-solid fa-rotate-right"></i> রিসেট
+            </button>
+          </div>
+
+          <!-- Chat Screen -->
+          <div id="fullAiChatMessages" class="flex-1 p-4 overflow-y-auto space-y-3 bg-slate-50/50 text-xs">
+            <div class="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-slate-700 max-w-[85%] shadow-xs">
+              আসসালামু আলাইকুম! আমি আপনার <b>BloodLink এআই মেডিকেল সহকারী</b>। রক্তদানের যোগ্যতা, গ্রুপের সামঞ্জস্য অথবা জরুরি স্বাস্থ্য সংক্রান্ত যে কোনো প্রশ্ন নিচে লিখুন।
+            </div>
+          </div>
+
+          <!-- Quick Suggestion Buttons -->
+          <div class="p-2 border-t border-slate-100 bg-white flex gap-1.5 overflow-x-auto text-[11px]">
+            <button onclick="fullAiAsk('আমি কি আজ রক্ত দিতে পারব?')" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 px-3 py-1 rounded-full whitespace-nowrap transition">🩸 যোগ্যতা নিয়ম</button>
+            <button onclick="fullAiAsk('O- নেগেটিভ রক্তের বিশেষত্ব কি?')" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 px-3 py-1 rounded-full whitespace-nowrap transition">🛡️ O- রক্তের তথ্য</button>
+            <button onclick="fullAiAsk('অ্যান্টিবায়োটিক খেলে কি রক্ত দেওয়া যায়?')" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 px-3 py-1 rounded-full whitespace-nowrap transition">💊 ওষুধের প্রভাব</button>
+            <button onclick="fullAiAsk('রক্তদানের পর মাথা ঘুরলে করণীয় কি?')" class="bg-slate-100 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 px-3 py-1 rounded-full whitespace-nowrap transition">⚠️ রক্তদান পরবর্তী যত্ন</button>
+          </div>
+
+          <!-- Chat Input -->
+          <form onsubmit="handleFullAiSubmit(event)" class="p-3 bg-white border-t border-slate-200 rounded-b-2xl flex gap-2">
+            <input type="text" id="fullAiInput" placeholder="আপনার প্রশ্ন বা লক্ষণগুলো বাংলায় লিখুন..." class="flex-1 border border-slate-300 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow">
+              <span>পাঠান</span>
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- AI Rapid Eligibility Diagnostic Tool -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex items-center gap-2 mb-3">
+              <i class="fa-solid fa-clipboard-check text-red-600 text-base"></i>
+              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">স্বয়ংক্রিয় এআই যোগ্যতা স্ক্রিনার</h3>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">আপনার প্রাথমিক তথ্য দিন, এআই তাৎক্ষণিক মূল্যায়ন করে জানিয়ে দেবে আপনি রক্ত দিতে পারবেন কি না।</p>
+
+            <form id="aiScreeningForm" onsubmit="evaluateAiEligibility(event)" class="space-y-3">
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">বয়স (বছর)</label>
+                  <input type="number" id="sc-age" required min="12" max="100" class="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none" placeholder="উদাঃ ২৩">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-semibold text-slate-600 mb-1">ওজন (কেজি)</label>
+                  <input type="number" id="sc-weight" required min="30" max="200" class="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none" placeholder="উদাঃ ৫৫">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">সর্বশেষ রক্তদানের সময়কাল</label>
+                <select id="sc-last" class="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+                  <option value="never">পূর্বে কখনো দিইনি (নতুন)</option>
+                  <option value="more_than_3">৩ মাসের বেশি আগে</option>
+                  <option value="less_than_3">৩ মাসের কম আগে</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">সাম্প্রতিক কোনো উপসর্গ বা ওষুধ?</label>
+                <select id="sc-health" class="w-full border rounded-lg px-2.5 py-1.5 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+                  <option value="healthy">সম্পূর্ণ সুস্থ ও স্বাভাবিক</option>
+                  <option value="fever">গত ৩ দিনে জ্বর/সর্দি ছিল</option>
+                  <option value="antibiotic">চলমান অ্যান্টিবায়োটিক ডোজ</option>
+                  <option value="major_surgery">গত ৬ মাসে বড় কোনো সার্জারি</option>
+                </select>
+              </div>
+
+              <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 rounded-lg text-xs transition shadow">
+                এআই বিশ্লেষণ শুরু করুন
+              </button>
+            </form>
+
+            <div id="aiScreenResult" class="mt-4 hidden p-3 rounded-xl border text-xs"></div>
+          </div>
+
+          <!-- AI Clinical Facts & Myth Busters -->
+          <div class="bg-amber-50/60 p-4 rounded-2xl border border-amber-200">
+            <h4 class="font-bold text-xs text-amber-900 flex items-center gap-1.5 mb-2">
+              <i class="fa-solid fa-lightbulb text-amber-600"></i> এআই ফ্যাক্ট চেকার (মিথ বনাম সত্য)
+            </h4>
+            <div class="text-[11px] text-amber-950 space-y-2">
+              <p>❌ <b>ভুল ধারণা:</b> রক্ত দিলে শরীর দুর্বল হয়ে যায়।</p>
+              <p>✅ <b>চিকিৎসা বিজ্ঞান:</b> মানুষের শরীরে থাকা লোহিত রক্তকণিকা এমনিতেই ১২০ দিন পর পর প্রাকৃতিকভাবে ধ্বংস হয়ে নতুন তৈরি হয়। রক্ত দিলে বোন ম্যারো উদ্দীপিত হয়ে আরও দ্রুত সুস্থ কোষ তৈরি করে।</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. FIND DONOR PAGE -->
+    <section id="page-find-donor" class="page-section hidden space-y-4">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">রক্তদাতা অনুসন্ধান ফিল্টার</h2>
+          <p class="text-xs text-slate-500">গ্রুপ, এলাকা এবং উপযুক্ততার ভিত্তিতে ফিল্টার করুন</p>
+        </div>
+        <div class="flex flex-wrap gap-2 w-full md:w-auto">
+          <select id="filterBloodGroup" class="border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+            <option value="">সকল গ্রুপের রক্ত</option>
+            <option value="A+">A+</option><option value="A-">A-</option>
+            <option value="B+">B+</option><option value="B-">B-</option>
+            <option value="O+">O+</option><option value="O-">O-</option>
+            <option value="AB+">AB+</option><option value="AB-">AB-</option>
+          </select>
+          <input type="text" id="filterArea" placeholder="এলাকা বা জেলা খুঁজুন..." class="border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+          <select id="filterStatus" class="border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-red-500 focus:outline-none">
+            <option value="all">সকল অবস্থা</option>
+            <option value="ready">শুধুমাত্র প্রস্তুত ডোনার</option>
+          </select>
+        </div>
+      </div>
+      <div id="donorDirectoryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    </section>
+
+    <!-- 4. MAP VIEW -->
+    <section id="page-map-view" class="page-section hidden space-y-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">রক্তদাতাদের লাইভ ম্যাপ ভিউ</h2>
+          <p class="text-xs text-slate-500">নিকটবর্তী ডোনারদের অবস্থান ম্যাপে পিন পয়েন্ট আকারে দেখুন</p>
+        </div>
+        <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-medium"><i class="fa-solid fa-location-crosshairs mr-1"></i> OpenStreetMap Live</span>
+      </div>
+      <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+        <div id="map"></div>
+      </div>
+    </section>
+
+    <!-- 5. SOS FEED -->
+    <section id="page-sos-feed" class="page-section hidden space-y-4">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800">জরুরি রক্তের লাইভ বোর্ড (SOS Feed)</h2>
+          <p class="text-xs text-slate-500">রোগীর তাৎক্ষণিক প্রয়োজনে সহায়তার হাত বাড়িয়ে দিন</p>
+        </div>
+        <button onclick="openSosModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-xs font-bold shadow flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> রক্তের আবেদন জানান
+        </button>
+      </div>
+      <div id="liveSosBoard" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- 6. COMPATIBILITY -->
+    <section id="page-compatibility" class="page-section hidden space-y-6">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-2">রক্তের গ্রুপ ম্যাচিং ক্যালকুলেটর (Compatibility Engine)</h2>
+        <p class="text-xs text-slate-500 mb-6">রোগীর রক্তের গ্রুপ নির্বাচন করুন এবং দেখুন কোন কোন গ্রুপের রক্ত নিরাপদ</p>
+        
+        <div class="max-w-md mx-auto mb-8 text-center">
+          <label class="block text-xs font-semibold text-slate-600 mb-2">রোগীর রক্তের গ্রুপ নির্বাচন করুন:</label>
+          <div class="grid grid-cols-4 gap-2">
+            <button onclick="calculateCompatibility('A+')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">A+</button>
+            <button onclick="calculateCompatibility('O+')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">O+</button>
+            <button onclick="calculateCompatibility('B+')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">B+</button>
+            <button onclick="calculateCompatibility('AB+')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">AB+</button>
+            <button onclick="calculateCompatibility('A-')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">A-</button>
+            <button onclick="calculateCompatibility('O-')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">O-</button>
+            <button onclick="calculateCompatibility('B-')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">B-</button>
+            <button onclick="calculateCompatibility('AB-')" class="border border-red-200 hover:bg-red-50 p-2.5 rounded-lg text-xs font-bold transition">AB-</button>
+          </div>
+        </div>
+
+        <div id="compatResultBox" class="bg-slate-50 p-5 rounded-xl border border-slate-200 text-center">
+          <p class="text-xs text-slate-500">উপরে যেকোনো একটি গ্রুপে ক্লিক করে তাৎক্ষণিক ফলাফল দেখুন</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. LEADERBOARD -->
+    <section id="page-leaderboard" class="page-section hidden space-y-4">
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <h2 class="text-lg font-bold text-slate-800 mb-1">রক্তদাতা লিডারবোর্ড (Hero Donors)</h2>
+        <p class="text-xs text-slate-500 mb-6">সর্বাধিক রক্তদানকারী বীর সন্তানদের সম্মাননা ও র‍্যাঙ্ক</p>
+        <div id="leaderboardList" class="space-y-3 max-w-2xl mx-auto"></div>
+      </div>
+    </section>
+
+    <!-- 8. REGISTER DONOR -->
+    <section id="page-register-donor" class="page-section hidden">
+      <div class="max-w-xl mx-auto bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="text-xl font-bold text-red-600 mb-1 text-center">নতুন রক্তদাতা প্রোফাইল তৈরি</h2>
+        <p class="text-xs text-slate-500 text-center mb-6">আপনার সামান্য অংশগ্রহণে বেঁচে যেতে পারে একটি মূল্যবান প্রাণ</p>
+        
+        <form id="donorRegisterForm" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">পুরো নাম</label>
+            <input type="text" id="reg-name" required class="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="উদাঃ সাইদ আল সাহাব">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">রক্তের গ্রুপ</label>
+              <select id="reg-group" required class="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-500">
+                <option value="">নির্বাচন করুন</option>
+                <option value="A+">A+</option><option value="A-">A-</option>
+                <option value="B+">B+</option><option value="B-">B-</option>
+                <option value="O+">O+</option><option value="O-">O-</option>
+                <option value="AB+">AB+</option><option value="AB-">AB-</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">ফোন নম্বর</label>
+              <input type="tel" id="reg-phone" required class="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="01XXXXXXXXX">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">বর্তমান এলাকা / উপজেলা / জেলা</label>
+            <input type="text" id="reg-area" required class="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="উদাঃ শিমুলতলী, গাজীপুর">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">সর্বশেষ রক্তদানের তারিখ</label>
+              <input type="date" id="reg-last-date" class="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">মোট রক্তদান সংখ্যা</label>
+              <input type="number" id="reg-count" min="0" value="0" class="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-red-500">
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 rounded-lg text-xs transition-colors shadow">
+            নিবন্ধন নিশ্চিত করুন
+          </button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- SOS Modal -->
+  <div id="sosModal" class="fixed inset-0 bg-black/60 backdrop-blur-xs hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+      <div class="flex justify-between items-center mb-4 pb-2 border-b">
+        <h3 class="font-bold text-red-600 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-triangle-exclamation"></i> জরুরি রক্তের আবেদন তৈরি করুন
+        </h3>
+        <button onclick="closeSosModal()" class="text-slate-400 hover:text-slate-600 text-lg font-bold">&times;</button>
+      </div>
+      <form id="sosPostForm" class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">রোগীর অবস্থা বা সমস্যা</label>
+          <input type="text" id="sos-patient" required class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-red-500" placeholder="উদাঃ অপারেশন / থ্যালাসেমিয়া / ডেলিভারি">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">রক্তের গ্রুপ</label>
+            <select id="sos-group" required class="w-full border rounded-lg p-2 text-xs">
+              <option value="A+">A+</option><option value="A-">A-</option>
+              <option value="B+">B+</option><option value="B-">B-</option>
+              <option value="O+">O+</option><option value="O-">O-</option>
+              <option value="AB+">AB+</option><option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">প্রয়োজনীয় ব্যাগ</label>
+            <input type="number" id="sos-bags" min="1" value="1" required class="w-full border rounded-lg p-2 text-xs">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">জরুরি স্তর (Urgency)</label>
+            <select id="sos-urgency" class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-red-500">
+              <option value="Critical">খুবই জরুরি (Critical)</option>
+              <option value="High">আজকের মধ্যেই (High)</option>
+              <option value="Medium">আগামীকাল (Medium)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">যোগাযোগ নম্বর</label>
+            <input type="tel" id="sos-phone" required class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-red-500" placeholder="01XXXXXXXXX">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">হাসপাতাল ও সম্পূর্ণ ঠিকানা</label>
+          <input type="text" id="sos-hospital" required class="w-full border rounded-lg p-2 text-xs focus:ring-2 focus:ring-red-500" placeholder="উদাঃ শহীদ তাজউদ্দীন আহমদ মেডিকেল কলেজ, গাজীপুর">
+        </div>
+        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-lg text-xs mt-3 shadow">
+          লাইভ বোর্ডে পোস্ট করুন
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- FLOATING PERSISTENT AI CHATBOT WIDGET -->
+  <div class="fixed bottom-6 right-6 z-50">
+    <button onclick="toggleFloatingChat()" class="bg-red-600 hover:bg-red-700 text-white p-3.5 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95 border-2 border-white">
+      <i class="fa-solid fa-robot text-xl"></i>
+    </button>
+  </div>
+
+  <div id="floatingChatBox" class="fixed bottom-20 right-6 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 hidden flex-col z-50 overflow-hidden">
+    <div class="bg-red-600 p-3.5 text-white flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center text-xs">
+          <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+        <div>
+          <h4 class="font-bold text-xs">BloodLink এআই চ্যাট</h4>
+          <p class="text-[9px] text-emerald-200 font-medium">অনলাইন সাহায্যকারী</p>
+        </div>
+      </div>
+      <button onclick="toggleFloatingChat()" class="text-white hover:text-red-200 text-lg">&times;</button>
+    </div>
+
+    <div id="floatingChatMessages" class="p-3 h-72 overflow-y-auto space-y-2.5 text-xs bg-slate-50">
+      <div class="bg-white p-2.5 rounded-xl rounded-tl-none border border-slate-200 text-slate-700 shadow-xs">
+        আসসালামু আলাইকুম! কোনো সাহায্য প্রয়োজন? রক্তের গ্রুপ বা শর্তাবলী জানতে এখানে প্রশ্ন করতে পারেন।
+      </div>
+    </div>
+
+    <div class="p-2.5 bg-white border-t border-slate-200 flex gap-1.5">
+      <input type="text" id="floatingChatInput" placeholder="এখানে লিখুন..." class="flex-1 border rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-red-500">
+      <button onclick="sendFloatingMsg()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-semibold">
+        <i class="fa-solid fa-paper-plane"></i>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // State Store Keys
+    const DONOR_KEY = 'bloodlink_donors_pro_v3';
+    const SOS_KEY = 'bloodlink_sos_pro_v3';
+
+    let donors = JSON.parse(localStorage.getItem(DONOR_KEY)) || [
+      { name: "শাকিল আহমেদ", group: "O+", phone: "01811223344", area: "শিমুলতলী, গাজীপুর", lastDate: "2026-05-10", donations: 6, lat: 23.998, lng: 90.422 },
+      { name: "রাকিব হাসান", group: "A+", phone: "01722334455", area: "মিরপুর ১০, ঢাকা", lastDate: "2026-09-15", donations: 3, lat: 23.807, lng: 90.368 },
+      { name: "তানজিম কবির", group: "B+", phone: "01933445566", area: "উত্তরা সেক্টর ৭, ঢাকা", lastDate: "", donations: 1, lat: 23.872, lng: 90.398 },
+      { name: "সাইদ আল সাহাব", group: "O+", phone: "01700000000", area: "গাজীপুর সদর", lastDate: "2026-04-01", donations: 8, lat: 24.000, lng: 90.420 }
+    ];
+
+    let sosList = JSON.parse(localStorage.getItem(SOS_KEY)) || [
+      { id: 1, patient: "জরুরি হার্ট সার্জারি", group: "O+", bags: 2, hospital: "জাতীয় হৃদরোগ ইনস্টিটিউট, ঢাকা", phone: "01711000000", urgency: "Critical", time: "১০ মিনিট আগে" },
+      { id: 2, patient: "থ্যালাসেমিয়া নিয়মিত ট্রান্সফিউশন", group: "B+", bags: 1, hospital: "শহীদ তাজউদ্দীন আহমদ মেডিকেল কলেজ, গাজীপুর", phone: "01822000000", urgency: "High", time: "১ ঘণ্টা আগে" }
+    ];
+
+    let mapInstance = null;
+
+    // Helper: Format phone number cleanly for WhatsApp API (supports 01..., +880..., 880..., spaces, hyphens)
+    function formatWhatsAppNumber(phone) {
+      let clean = (phone || '').replace(/[^0-9]/g, '');
+      if (clean.startsWith('0')) {
+        clean = '88' + clean;
+      } else if (clean.startsWith('1')) {
+        clean = '880' + clean;
+      } else if (!clean.startsWith('88')) {
+        clean = '88' + clean;
+      }
+      return clean;
+    }
+
+    // SPA Router
+    function showPage(pageId) {
+      document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+      document.getElementById('page-' + pageId).classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.remove('bg-red-700');
+        btn.classList.add('hover:bg-red-700');
+      });
+      const activeBtn = document.getElementById('nav-' + pageId);
+      if (activeBtn) {
+        activeBtn.classList.add('bg-red-700');
+        activeBtn.classList.remove('hover:bg-red-700');
+      }
+
+      if (pageId === 'find-donor') renderDonors();
+      if (pageId === 'sos-feed') renderLiveSos();
+      if (pageId === 'leaderboard') renderLeaderboard();
+      if (pageId === 'map-view') initMap();
+    }
+
+    function openSosModal() { document.getElementById('sosModal').classList.remove('hidden'); }
+    function closeSosModal() { document.getElementById('sosModal').classList.add('hidden'); }
+
+    // Floating Chat Toggle
+    function toggleFloatingChat() {
+      const box = document.getElementById('floatingChatBox');
+      box.classList.toggle('hidden');
+      box.classList.toggle('flex');
+    }
+
+    // AI Core Knowledge Engine (Bangla NLP Logic)
+    function generateAiMedicalReply(query) {
+      const q = query.toLowerCase();
+
+      if (q.includes('সালাম') || q.includes('আসসালামু') || q.includes('slam') || q.includes('assalam')) {
+        return `ওয়ালাইকুম আসসালাম! আমি আপনাকে কীভাবে সাহায্য করতে পারি? রক্তদানের শর্ত, জরুরি রক্তের গ্রুপ বা অন্য কোনো বিষয়ে প্রশ্ন করতে পারেন।`;
+      }
+
+      if (q.includes('যোগ্যতা') || q.includes('শর্ত') || q.includes('দিতে পারব') || q.includes('বয়স') || q.includes('ওজন')) {
+        return `🩸 <b>রক্তদানের চিকিৎসাগত প্রধান শর্তাবলী:</b><br>
+        • বয়স অবশ্যই <b>১৮ থেকে ৬০ বছর</b> হতে হবে।<br>
+        • শরীরের ওজন কমপক্ষে <b>৫০ কেজি</b> হতে হবে।<br>
+        • শেষ রক্তদানের পর পুরুষদের জন্য কমপক্ষে <b>৩ মাস (৯০ দিন)</b> এবং নারীদের জন্য <b>৪ মাস (১২০ দিন)</b> অতিবাহিত হতে হবে।<br>
+        • রক্তচাপ ও পালস স্বাভাবিক থাকা জরুরি।`;
+      }
+
+      if (q.includes('o-') || q.includes('ও নেগেটিভ') || q.includes('ও-')) {
+        return `🛡️ <b>O- (ও নেগেটিভ) রক্তের বিশেষত্ব:</b><br>
+        • O- রক্তকে <b>'Universal Donor' বা সর্বজনীন দাতা</b> বলা হয়। জরুরি মুহূর্তে কোনো পরীক্ষা ছাড়া যে কাউকে এই রক্ত দেওয়া যায়।<br>
+        • তবে O- গ্রুপের কোনো রোগী রক্ত নিতে গেলে তাকে <b>শুধুমাত্র O- রক্তই</b> দিতে হবে।`;
+      }
+
+      if (q.includes('ab+') || q.includes('এবি পজিটিভ') || q.includes('এবি+')) {
+        return `🌟 <b>AB+ (এবি পজিটিভ) রক্তের বিশেষত্ব:</b><br>
+        • AB+ কে বলা হয় <b>'Universal Recipient' বা সর্বজনীন গ্রহীতা</b>। এই গ্রুপের রোগীরা প্রয়োজনে যে কোনো গ্রুপের (A, B, AB, O) রক্ত গ্রহণ করতে পারে।`;
+      }
+
+      if (q.includes('ওষুধ') || q.includes('অ্যান্টিবায়োটিক') || q.includes('ট্যাবলেট') || q.includes('প্যারাসিটামল')) {
+        return `💊 <b>ওষুধ ও রক্তদান:</b><br>
+        • সাধারণ প্যারাসিটামল খাওয়ার ২৪ ঘণ্টা পর রক্ত দেওয়া যায়।<br>
+        • <b>অ্যান্টিবায়োটিক</b> খেলে সম্পূর্ণ কোর্স শেষ হওয়ার অন্তত <b>৭ থেকে ১৪ দিন পর</b> সম্পূর্ণ সুস্থ বোধ করলে তবেই রক্ত দেওয়া উচিত।<br>
+        • অ্যাসপিরিন খেলে রক্তদানের অন্তত ৪৮ ঘণ্টা আগে তা বন্ধ রাখতে হয়।`;
+      }
+
+      if (q.includes('ঘুরলে') || q.includes('দুর্বল') || q.includes('বমি') || q.includes('মাথা')) {
+        return `⚠️ <b>রক্তদানের পর মাথা ঘুরলে করণীয়:</b><br>
+        ১. তৎক্ষণাৎ সমতল জায়গায় শুয়ে পড়ুন এবং পা দুটি সামান্য উঁচু করে রাখুন।<br>
+        ২. স্যালাইন, ফলের রস বা প্রচুর পানি পান করুন।<br>
+        ৩. পরবর্তী ৫-৬ ঘণ্টা ভারী পরিশ্রম বা ওজন তোলা থেকে বিরত থাকুন।`;
+      }
+
+      if (q.includes('উপকার') || q.includes('সুবিধা') || q.includes('লাভ')) {
+        return `❤️ <b>রক্তদানের স্বাস্থ্যগত উপকারিতা:</b><br>
+        • নিয়মিত রক্তদানে হৃদরোগ এবং হার্ট অ্যাটাকের ঝুঁকি উল্লেখযোগ্যভাবে কমে।<br>
+        • শরীরে নতুন ও তাজা লোহিত রক্তকণিকা তৈরি দ্রুততর হয়।<br>
+        • অতিরিক্ত আয়রন জমতে দেয় না, ফলে লিভার সুরক্ষিত থাকে।<br>
+        • রক্তদানের সময় বিনামূল্যে হেপাটাইটিস, সিফিলিসসহ জরুরি স্ক্রিনিং হয়ে যায়।`;
+      }
+
+      if (q.includes('নারী') || q.includes('মহিলা') || q.includes('মেয়ে')) {
+        return `👩 <b>নারীদের রক্তদান সংক্রান্ত নির্দেশনা:</b><br>
+        • নারীদের ক্ষেত্রে রক্তদানের মধ্যবর্তী বিরতি কমপক্ষে <b>৪ মাস (১২০ দিন)</b> রাখা উচিত।<br>
+        • হিমোগ্লোবিনের মাত্রা ন্যূনতম ১২.০ g/dL এবং ওজন ৫০ কেজির বেশি হওয়া আবশ্যক।<br>
+        • গর্ভাবস্থায় বা সন্তানকে বুকের দুধ পান করানোর সময় রক্তদান করা যাবে না।`;
+      }
+
+      if (q.includes('খাবার') || q.includes('পানি') || q.includes('প্রস্তুতি')) {
+        return `🥗 <b>রক্তদানের আগে-পরের প্রস্তুতি:</b><br>
+        • রক্ত দেওয়ার ২-৩ ঘণ্টা আগে পুষ্টিকর হালকা খাবার এবং প্রচুর পানি/স্যালাইন পান করুন। খালি পেটে রক্ত দেওয়া অনুচিত।<br>
+        • রক্তদানের পর মিষ্টি জাতীয় খাবার, ফলের জুস বা স্যুপ খাওয়া ভালো। ধূমপান অন্তত ২ ঘণ্টা এড়িয়ে চলুন।`;
+      }
+
+      if (q.includes('থ্যালাসেমিয়া') || q.includes('থ্যালাসেমিয়া')) {
+        return `🧬 <b>থ্যালাসেমিয়া রোগীদের রক্তদান:</b><br>
+        • থ্যালাসেমিয়া রোগীদের জীবন বাঁচাতে প্রতি মাসে ১-২ ব্যাগ ফ্রেশ রক্তের প্রয়োজন হয়।<br>
+        • আপনি যদি সুস্থ ও প্রাপ্তবয়স্ক হন, নিয়মিত রক্ত দিয়ে একজন শিশুর মুখে হাসি ফোটাতে পারেন।`;
+      }
+
+      return `আপনার প্রশ্নের জন্য ধন্যবাদ। রক্তদানের ক্ষেত্রে যেকোনো জরুরি সন্দেহে আমাদের প্ল্যাটফর্মের নির্দেশিকা দেখুন অথবা তাৎক্ষণিক প্রয়োজনে ডিরেক্টরি থেকে সরাসরি উপযুক্ত ডোনারকে কল করুন।`;
+    }
+
+    // AI Screen Diagnostic Form
+    function evaluateAiEligibility(e) {
+      e.preventDefault();
+      const age = parseInt(document.getElementById('sc-age').value);
+      const weight = parseInt(document.getElementById('sc-weight').value);
+      const last = document.getElementById('sc-last').value;
+      const health = document.getElementById('sc-health').value;
+      const resBox = document.getElementById('aiScreenResult');
+
+      let eligible = true;
+      let reasons = [];
+
+      if (age < 18 || age > 60) {
+        eligible = false;
+        reasons.push("বয়স ১৮ থেকে ৬০ বছরের মধ্যে হতে হবে (আপনার দেওয়া বয়স: " + age + ")");
+      }
+
+      if (weight < 50) {
+        eligible = false;
+        reasons.push("রক্তদাতার ওজন কমপক্ষে ৫০ কেজি থাকা আবশ্যক (আপনার ওজন: " + weight + " কেজি)");
+      }
+
+      if (last === 'less_than_3') {
+        eligible = false;
+        reasons.push("পূর্বের রক্তদানের পর এখনো ৩ মাস পূর্ণ হয়নি");
+      }
+
+      if (health === 'fever') {
+        eligible = false;
+        reasons.push("জ্বর বা সর্দি সেরে ওঠার পর অন্তত ৩-৫ দিন অপেক্ষা করতে হবে");
+      } else if (health === 'antibiotic') {
+        eligible = false;
+        reasons.push("অ্যান্টিবায়োটিকের ডোজ শেষ হওয়ার অন্তত ১ সপ্তাহ পর রক্ত দেওয়া যাবে");
+      } else if (health === 'major_surgery') {
+        eligible = false;
+        reasons.push("বড় অপারেশনের পর সাধারণত ৬ মাস রক্তদান বন্ধ রাখতে হয়");
+      }
+
+      resBox.classList.remove('hidden', 'bg-emerald-50', 'border-emerald-300', 'text-emerald-800', 'bg-red-50', 'border-red-300', 'text-red-800');
+
+      if (eligible) {
+        resBox.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-800');
+        resBox.innerHTML = `
+          <div class="font-bold flex items-center gap-1.5 mb-1 text-sm">
+            <i class="fa-solid fa-circle-check text-emerald-600"></i> অভিনন্দন! আপনি রক্ত দিতে সম্পূর্ণ উপযুক্ত।
+          </div>
+          <p>আপনার বয়স, ওজন এবং শারীরিক অবস্থা আন্তর্জাতিক মেডিকেল মানদণ্ড অনুযায়ী রক্তদানের অনুকূল। আপনি রক্তদাতা হিসেবে নিবন্ধন করতে পারেন।</p>
+        `;
+      } else {
+        resBox.classList.add('bg-red-50', 'border-red-300', 'text-red-800');
+        resBox.innerHTML = `
+          <div class="font-bold flex items-center gap-1.5 mb-1 text-sm">
+            <i class="fa-solid fa-triangle-exclamation text-red-600"></i> আপনি এই মুহূর্তে রক্ত দিতে পারবেন না।
+          </div>
+          <ul class="list-disc list-inside space-y-1">
+            ${reasons.map(r => `<li>${r}</li>`).join('')}
+          </ul>
+        `;
+      }
+    }
+
+    // Full AI Hub Chat Handlers
+    function handleFullAiSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('fullAiInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      appendAiMessage('fullAiChatMessages', 'user', val);
+      input.value = '';
+
+      const typingId = showAiTyping('fullAiChatMessages');
+      setTimeout(() => {
+        removeAiTyping(typingId);
+        const reply = generateAiMedicalReply(val);
+        appendAiMessage('fullAiChatMessages', 'ai', reply);
+      }, 500);
+    }
+
+    function fullAiAsk(text) {
+      document.getElementById('fullAiInput').value = text;
+      handleFullAiSubmit(new Event('submit'));
+    }
+
+    function clearFullAiChat() {
+      document.getElementById('fullAiChatMessages').innerHTML = `
+        <div class="bg-white p-3.5 rounded-2xl rounded-tl-none border border-slate-200 text-slate-700 max-w-[85%] shadow-xs">
+          আসসালামু আলাইকুম! চ্যাট হিস্ট্রি রিসেট করা হয়েছে। আপনার নতুন প্রশ্নটি লিখুন।
+        </div>
+      `;
+    }
+
+    // Floating Chat Handlers
+    function sendFloatingMsg() {
+      const input = document.getElementById('floatingChatInput');
+      const val = input.value.trim();
+      if (!val) return;
+
+      appendAiMessage('floatingChatMessages', 'user', val);
+      input.value = '';
+
+      const typingId = showAiTyping('floatingChatMessages');
+      setTimeout(() => {
+        removeAiTyping(typingId);
+        const reply = generateAiMedicalReply(val);
+        appendAiMessage('floatingChatMessages', 'ai', reply);
+      }, 500);
+    }
+
+    // Message Rendering Helpers
+    function appendAiMessage(containerId, sender, htmlText) {
+      const c = document.getElementById(containerId);
+      const div = document.createElement('div');
+      if (sender === 'user') {
+        div.className = "bg-red-600 text-white p-2.5 rounded-xl rounded-tr-none ml-auto max-w-[80%] text-xs shadow-xs";
+      } else {
+        div.className = "bg-white text-slate-700 p-3 rounded-xl rounded-tl-none border border-slate-200 mr-auto max-w-[85%] text-xs shadow-xs leading-relaxed";
+      }
+      div.innerHTML = htmlText;
+      c.appendChild(div);
+      c.scrollTop = c.scrollHeight;
+    }
+
+    function showAiTyping(containerId) {
+      const c = document.getElementById(containerId);
+      const id = 'typing-' + Date.now();
+      const div = document.createElement('div');
+      div.id = id;
+      div.className = "bg-white text-slate-400 p-2.5 rounded-xl rounded-tl-none border border-slate-200 mr-auto max-w-[50%] text-[11px] italic flex items-center gap-1.5";
+      div.innerHTML = `<span class="animate-pulse">এআই উত্তর ভাবছে...</span>`;
+      c.appendChild(div);
+      c.scrollTop = c.scrollHeight;
+      return id;
+    }
+
+    function removeAiTyping(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    // Eligibility check for 90 days
+    function checkEligibility(lastDate) {
+      if (!lastDate) return { ok: true, label: "রক্তদানে প্রস্তুত", badge: "bg-emerald-100 text-emerald-700" };
+      const days = Math.ceil(Math.abs(new Date() - new Date(lastDate)) / (1000 * 60 * 60 * 24));
+      return days >= 90 
+        ? { ok: true, label: "রক্তদানে প্রস্তুত", badge: "bg-emerald-100 text-emerald-700" } 
+        : { ok: false, label: `${90 - days} দিন বাকি`, badge: "bg-amber-100 text-amber-700" };
+    }
+
+    // Donor Directory Render (Updated with dynamic clean WhatsApp handler)
+    function renderDonors() {
+      const group = document.getElementById('filterBloodGroup').value;
+      const area = document.getElementById('filterArea').value.trim().toLowerCase();
+      const statusFilter = document.getElementById('filterStatus').value;
+      const container = document.getElementById('donorDirectoryGrid');
+
+      const filtered = donors.filter(d => {
+        const matchGroup = !group || d.group === group;
+        const matchArea = !area || d.area.toLowerCase().includes(area);
+        const elg = checkEligibility(d.lastDate);
+        const matchStatus = statusFilter === 'all' || (statusFilter === 'ready' && elg.ok);
+        return matchGroup && matchArea && matchStatus;
+      });
+
+      container.innerHTML = filtered.length ? filtered.map(d => {
+        const elg = checkEligibility(d.lastDate);
+        const waNumber = formatWhatsAppNumber(d.phone);
+
+        return `
+          <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between hover:border-red-300 transition">
+            <div>
+              <div class="flex justify-between items-start mb-2">
+                <span class="font-bold text-slate-800 text-sm">${d.name}</span>
+                <span class="bg-red-100 text-red-700 text-xs font-black px-2 py-0.5 rounded">${d.group}</span>
+              </div>
+              <p class="text-xs text-slate-500 mb-1"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>${d.area}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${elg.badge}">${elg.label}</span>
+                <span class="text-[10px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full"><i class="fa-solid fa-ribbon text-red-500 mr-0.5"></i> ${d.donations} বার রক্তদান</span>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-4 pt-3 border-t border-slate-100">
+              <a href="tel:${d.phone}" class="flex-1 text-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs py-1.5 rounded-lg font-medium transition">
+                <i class="fa-solid fa-phone mr-1"></i> কল
+              </a>
+              <a href="https://wa.me/${waNumber}?text=আসসালামু%20আলাইকুম,%20BloodLink%20থেকে%20যোগাযোগ%20করছি।" target="_blank" class="flex-1 text-center bg-emerald-500 hover:bg-emerald-600 text-white text-xs py-1.5 rounded-lg font-medium transition">
+                <i class="fa-brands fa-whatsapp mr-1"></i> হোয়াটসঅ্যাপ
+              </a>
+            </div>
+          </div>
+        `;
+      }).join('') : '<p class="text-xs text-slate-400 col-span-3 text-center py-10">কোনো ডোনার খুঁজে পাওয়া যায়নি।</p>';
+    }
+
+    // SOS Live Feed Render
+    function renderLiveSos() {
+      const container = document.getElementById('liveSosBoard');
+      container.innerHTML = sosList.map(s => `
+        <div class="bg-white border-l-4 ${s.urgency === 'Critical' ? 'border-red-600' : 'border-amber-500'} p-4 rounded-r-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded ${s.urgency === 'Critical' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}">${s.urgency}</span>
+              <span class="bg-red-600 text-white text-xs font-bold px-2 py-0.5 rounded">${s.group} (${s.bags} ব্যাগ)</span>
+            </div>
+            <h4 class="font-bold text-slate-800 text-sm">${s.patient}</h4>
+            <p class="text-xs text-slate-600 mt-1"><i class="fa-solid fa-hospital text-slate-400 mr-1"></i> ${s.hospital}</p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+            <span class="text-xs text-slate-500 font-semibold">${s.phone}</span>
+            <div class="flex gap-2">
+              <button onclick="shareSos('${s.patient}', '${s.group}', '${s.hospital}', '${s.phone}')" class="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg text-xs font-bold transition">
+                <i class="fa-solid fa-share-nodes"></i> শেয়ার
+              </button>
+              <a href="tel:${s.phone}" class="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded-lg font-bold transition">
+                <i class="fa-solid fa-phone"></i> কল
+              </a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function shareSos(patient, group, hospital, phone) {
+      const text = `🚨 জরুরি রক্তের প্রয়োজন!\nরোগী: ${patient}\nগ্রুপ: ${group}\nহাসপাতাল: ${hospital}\nযোগাযোগ: ${phone}\n(BloodLink Platform)`;
+      if (navigator.share) {
+        navigator.share({ title: 'রক্তের প্রয়োজন', text: text });
+      } else {
+        navigator.clipboard.writeText(text);
+        alert('তথ্য কপি করা হয়েছে! মেসেঞ্জার বা হোয়াটসঅ্যাপে শেয়ার করতে পারবেন।');
+      }
+    }
+
+    // Leaflet Interactive Map
+    function initMap() {
+      setTimeout(() => {
+        if (!mapInstance) {
+          mapInstance = L.map('map').setView([23.998, 90.422], 10);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(mapInstance);
+        }
+
+        donors.forEach(d => {
+          if (d.lat && d.lng) {
+            L.marker([d.lat, d.lng]).addTo(mapInstance)
+              .bindPopup(`<b>${d.name} (${d.group})</b><br>${d.area}<br><a href="tel:${d.phone}" class="text-red-600 font-bold">কল করুন</a>`);
+          }
+        });
+      }, 200);
+    }
+
+    // Compatibility Matrix Engine
+    const bloodRules = {
+      'A+': ['A+', 'A-', 'O+', 'O-'],
+      'O+': ['O+', 'O-'],
+      'B+': ['B+', 'B-', 'O+', 'O-'],
+      'AB+': ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'],
+      'A-': ['A-', 'O-'],
+      'O-': ['O-'],
+      'B-': ['B-', 'O-'],
+      'AB-': ['AB-', 'A-', 'B-', 'O-']
+    };
+
+    function calculateCompatibility(recipientGroup) {
+      const compatibleDonors = bloodRules[recipientGroup] || [];
+      const box = document.getElementById('compatResultBox');
+      box.innerHTML = `
+        <div class="space-y-3">
+          <div class="text-sm font-bold text-slate-800">
+            রক্তের গ্রুপ <span class="text-red-600 font-black text-base">${recipientGroup}</span> রোগীর জন্য যারা রক্ত দিতে পারবেন:
+          </div>
+          <div class="flex justify-center flex-wrap gap-2">
+            ${compatibleDonors.map(g => `<span class="bg-red-600 text-white font-extrabold px-3 py-1 rounded-lg text-sm">${g}</span>`).join('')}
+          </div>
+          <p class="text-xs text-slate-500 mt-2">${recipientGroup === 'AB+' ? '🌟 AB+ হলো ইউনিভার্সাল গ্রহীতা (সবার থেকে নিতে পারে)।' : (recipientGroup === 'O-' ? '🛡️ O- হলো ইউনিভার্সাল দাতা (সবার জন্য নিরাপদ রক্ত)।' : 'শুধুমাত্র সামঞ্জস্যপূর্ণ গ্রুপের রক্ত গ্রহণ নিশ্চিত করুন।')}</p>
+        </div>
+      `;
+    }
+
+    // Leaderboard Render
+    function renderLeaderboard() {
+      const container = document.getElementById('leaderboardList');
+      const sorted = [...donors].sort((a, b) => (b.donations || 0) - (a.donations || 0));
+
+      container.innerHTML = sorted.map((d, idx) => {
+        let badge = idx === 0 ? '🥇 গোল্ড হিরো' : (idx === 1 ? '🥈 সিলভার হিরো' : '🥉 ব্রোঞ্জ হিরো');
+        return `
+          <div class="flex items-center justify-between p-3.5 bg-white rounded-xl border border-slate-200 shadow-xs">
+            <div class="flex items-center gap-3">
+              <span class="w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center font-bold text-xs text-slate-600">${idx + 1}</span>
+              <div>
+                <div class="font-bold text-slate-800 text-sm">${d.name}</div>
+                <div class="text-[11px] text-slate-500">${d.area} • গ্রুপ: <span class="font-bold text-red-600">${d.group}</span></div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-xs font-bold text-slate-700">${d.donations} বার রক্তদান</div>
+              <span class="text-[10px] text-amber-600 font-semibold">${badge}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Form Handlers
+    document.getElementById('donorRegisterForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      donors.unshift({
+        name: document.getElementById('reg-name').value.trim(),
+        group: document.getElementById('reg-group').value,
+        phone: document.getElementById('reg-phone').value.trim(),
+        area: document.getElementById('reg-area').value.trim(),
+        lastDate: document.getElementById('reg-last-date').value,
+        donations: parseInt(document.getElementById('reg-count').value) || 0,
+        lat: 23.998 + (Math.random() - 0.5) * 0.05,
+        lng: 90.422 + (Math.random() - 0.5) * 0.05
+      });
+      localStorage.setItem(DONOR_KEY, JSON.stringify(donors));
+      e.target.reset();
+      alert('অভিনন্দন! আপনি সফলভাবে রক্তদাতা হিসেবে নিবন্ধিত হয়েছেন।');
+      showPage('find-donor');
+    });
+
+    document.getElementById('sosPostForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      sosList.unshift({
+        id: Date.now(),
+        patient: document.getElementById('sos-patient').value.trim(),
+        group: document.getElementById('sos-group').value,
+        bags: document.getElementById('sos-bags').value,
+        hospital: document.getElementById('sos-hospital').value.trim(),
+        phone: document.getElementById('sos-phone').value.trim(),
+        urgency: document.getElementById('sos-urgency').value,
+        time: 'এখনই'
+      });
+      localStorage.setItem(SOS_KEY, JSON.stringify(sosList));
+      e.target.reset();
+      closeSosModal();
+      showPage('sos-feed');
+    });
+
+    // Directory filter listeners
+    document.getElementById('filterBloodGroup').addEventListener('change', renderDonors);
+    document.getElementById('filterArea').addEventListener('input', renderDonors);
+    document.getElementById('filterStatus').addEventListener('change', renderDonors);
+
+    // Initial Executions
+    renderDonors();
+    renderLiveSos();
+
+    // Home SOS preview populate
+    document.getElementById('homeSosPreview').innerHTML = sosList.slice(0, 2).map(s => `
+      <div class="p-3 bg-red-50 border border-red-200 rounded-lg">
+        <div class="flex justify-between items-center mb-1">
+          <span class="text-[11px] font-bold text-red-700">${s.patient}</span>
+          <span class="bg-red-600 text-white font-extrabold text-[10px] px-1.5 py-0.5 rounded">${s.group}</span>
+        </div>
+        <p class="text-[11px] text-slate-600 truncate">${s.hospital}</p>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>
